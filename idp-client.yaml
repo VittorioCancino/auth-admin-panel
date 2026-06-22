@@ -1,0 +1,66 @@
+# Source of truth for this service's Hydra client registration and local env
+# generation. This file is safe to commit: it describes required values, but it
+# must not contain generated credentials or real secrets.
+service:
+  name: auth-admin-panel
+  local_url: http://localhost:3001
+
+hydra_client:
+  id: auth-admin-panel
+  name: Auth Admin Panel
+  type: confidential
+  grant_types:
+    - authorization_code
+    - refresh_token
+  response_types:
+    - code
+  redirect_uris:
+    - http://localhost:3001/api/auth/callback/hydra
+  post_logout_redirect_uris:
+    - http://localhost:3001
+  token_endpoint_auth_method: client_secret_basic
+  scopes:
+    - openid
+    - profile
+    - email
+    - users.me.profile.read
+    - users.me.services.hydra.roles.read
+  audiences:
+    - resource-server
+
+runtime_env:
+  file: .env.local
+  values:
+    DATABASE_HOST: 127.0.0.1
+    DATABASE_PORT: "5433"
+    DATABASE_USER: admin_web
+    DATABASE_NAME: admin_web
+    DATABASE_URL:
+      template: postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?schema=public
+    PORT: "3001"
+    AUTH_URL: http://localhost:3001
+    HYDRA_ADMIN_URL: http://127.0.0.1:4445
+    AUTH_HYDRA_ID:
+      from: hydra_client.id
+    AUTH_HYDRA_ISSUER: http://127.0.0.1:4444/
+    AUTH_HYDRA_AUDIENCE:
+      from: hydra_client.audiences
+      join: " "
+    AUTH_HYDRA_SCOPE:
+      from: hydra_client.scopes
+      join: " "
+    ADMIN_EMAIL: admin@example.com
+    ADMIN_NAME: Platform Admin
+    DEV_BYPASS_AUTH: "false"
+  generated:
+    DATABASE_PASSWORD:
+      type: hex
+      bytes: 16
+    AUTH_SECRET:
+      type: hex
+      bytes: 32
+    AUTH_HYDRA_SECRET:
+      from: hydra_registration
+    ADMIN_PASSWORD:
+      type: hex
+      bytes: 16

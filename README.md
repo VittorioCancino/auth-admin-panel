@@ -20,13 +20,28 @@ Standalone Next.js admin console for managing Ory Hydra OAuth2 clients. It acts 
 
 **Prerequisites:** Docker, Bun. The sibling Hydra auth-server stack (`../auth-server/compose.yml`) must be running.
 
-1. Copy and fill in the environment file:
+1. Prepare local environment variables.
 
-```bash
-cp .env.example .env
-```
+`idp-client.yaml` is the committed source of truth for this service's Hydra
+client registration and local runtime environment contract. It is safe to commit
+because it describes required values but does not contain generated credentials
+or real secrets.
 
-Key variables to set:
+The platform orchestrator can generate the ignored `.env.local` file from
+`idp-client.yaml` after registering this service in Hydra. For standalone local
+development, run `./init.sh` once. If no env file exists, it creates `.env.local`
+from `idp-client.yaml`, generates local-only secrets, and exits so you can fill
+the remaining values.
+
+After the first standalone generation, fill these values in `.env.local`:
+
+| Variable            | Description                                      |
+| ------------------- | ------------------------------------------------ |
+| `AUTH_HYDRA_SECRET` | Secret returned by Hydra client registration     |
+
+Then rerun `./init.sh`.
+
+Key generated or local-only variables:
 
 | Variable            | Description                                                 |
 | ------------------- | ----------------------------------------------------------- |
@@ -35,8 +50,9 @@ Key variables to set:
 | `PORT`              | Local Next.js port (default: `3001`)                        |
 | `AUTH_SECRET`       | Random secret for NextAuth — `openssl rand -hex 32`         |
 | `ADMIN_EMAIL`       | Email for the seeded admin account                          |
-| `ADMIN_PASSWORD`    | Password for the seeded admin account                       |
+| `ADMIN_PASSWORD`    | Generated password for the seeded admin account             |
 | `HYDRA_ADMIN_URL`   | Hydra admin API base URL (default: `http://127.0.0.1:4445`) |
+| `AUTH_HYDRA_SECRET` | Hydra client secret for this service                        |
 
 2. Run the bootstrap script:
 

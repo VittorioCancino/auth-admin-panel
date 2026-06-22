@@ -138,7 +138,7 @@ export const listHydraClients = async (): Promise<
 
 - Every API route under `app/api/v1/` must verify the session via `auth()` before proxying to Hydra — no exceptions.
 - The Hydra admin API (`localhost:4445`) must never be called from client-side code.
-- Never commit secrets; copy `.env.example` to `.env`.
+- Never commit secrets. `idp-client.yaml` is the committed source of truth for Hydra client registration and local env generation, but generated credentials belong only in ignored files such as `.env.local`.
 - Passwords are hashed with bcryptjs (cost 12) — do not change the cost factor without reason.
 
 ## Hydra Layer Specifics
