@@ -12,6 +12,7 @@ hydra_client:
   grant_types:
     - authorization_code
     - refresh_token
+    - client_credentials
   response_types:
     - code
   redirect_uris:
@@ -24,9 +25,19 @@ hydra_client:
     - profile
     - email
     - users.me.profile.read
-    - users.me.services.hydra.roles.read
+    - users.me.services.auth-admin-panel.roles.read
+    - services.self-register
+    - services.self.maintainer-account.write
   audiences:
     - resource-server
+
+service_bootstrap:
+  enabled: true
+  token_scopes:
+    - services.self-register
+    - services.self.maintainer-account.write
+  maintainer_account:
+    email: maintainer@auth-admin-panel.local
 
 runtime_env:
   file: .env.local
@@ -40,15 +51,18 @@ runtime_env:
     PORT: "3001"
     AUTH_URL: http://localhost:3001
     HYDRA_ADMIN_URL: http://127.0.0.1:4445
+    AUTH_ADMIN_PANEL_SERVICE_BOOTSTRAP_SCOPE:
+      from: service_bootstrap.token_scopes
+      join: " "
+    AUTH_ADMIN_PANEL_MAINTAINER_EMAIL:
+      from: service_bootstrap.maintainer_account.email
     AUTH_HYDRA_ID:
       from: hydra_client.id
     AUTH_HYDRA_ISSUER: http://127.0.0.1:4444/
     AUTH_HYDRA_AUDIENCE:
       from: hydra_client.audiences
       join: " "
-    AUTH_HYDRA_SCOPE:
-      from: hydra_client.scopes
-      join: " "
+    AUTH_HYDRA_SCOPE: openid profile email users.me.profile.read users.me.services.auth-admin-panel.roles.read
     ADMIN_EMAIL: admin@example.com
     ADMIN_NAME: Platform Admin
     DEV_BYPASS_AUTH: "false"
@@ -61,6 +75,9 @@ runtime_env:
       bytes: 32
     AUTH_HYDRA_SECRET:
       from: hydra_registration
+    AUTH_ADMIN_PANEL_MAINTAINER_PASSWORD:
+      type: hex
+      bytes: 16
     ADMIN_PASSWORD:
       type: hex
       bytes: 16
